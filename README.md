@@ -66,8 +66,6 @@ A silhouette is created using a pretrained ResNet model. This model is efficient
 From the silhouettes, the following features are extracted:
 
 - Area
-- Height
-- Weight (in kg)
 - Perimeter
 - Aspect Ratio
 - Solidity

@@ -63,5 +63,4 @@ async def predict_bfp_bmi_fmi(
     }
 
 
-
     return JSONResponse(content=response_content)

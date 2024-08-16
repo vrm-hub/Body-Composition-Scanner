@@ -8,8 +8,8 @@ from open_ai import generate_health_report
 app = FastAPI()
 
 @app.get("/")
-def read_root():
-    return {"message": "Welcome to the API"}
+async def health_check():
+    return {"message": "The Health Check is successful"}
 
 @app.post("/predict/")
 async def predict_bfp_bmi_fmi(

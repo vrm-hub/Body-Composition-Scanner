@@ -103,6 +103,7 @@ tensorflow==2.16.2
 tensorflow-docs==2024.2.5.73858
 tensorflow-hub==0.16.1
 tensorflow-io-gcs-filesystem==0.37.1
+tensorflow-metal==1.1.0
 termcolor==2.4.0
 tf_keras==2.16.0
 threadpoolctl==3.5.0

@@ -1,12 +1,18 @@
 from fastapi import FastAPI, UploadFile, File
-from fastapi.responses import JSONResponse
+from fastapi.responses import StreamingResponse
 from PIL import Image
 import io
+import gzip
 from body_scan import predict, calculate_final_metrics
 from open_ai import generate_health_report
 
 app = FastAPI()
 
+def compress_data(data):
+    buf = io.BytesIO()
+    with gzip.GzipFile(fileobj=buf, mode='wb') as f:
+        f.write(data.encode('utf-8'))
+    return buf.getvalue()
 @app.get("/")
 async def health_check():
     return {"message": "The Health Check is successful"}
@@ -52,4 +58,9 @@ async def predict_bfp_bmi_fmi(
         "health_report": health_report
     }
 
-    return JSONResponse(content=response_content)
+    compressed_data = compress_data(response_content)
+
+    return StreamingResponse(io.BytesIO(compressed_data), media_type='application/gzip',
+                             headers={'Content-Encoding': 'gzip'})
+
+    # return JSONResponse(content=response_content)

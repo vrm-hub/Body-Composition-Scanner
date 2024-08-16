@@ -1,5 +1,6 @@
 .git/
 *.log
+.build/
 models-old
 movenet_singlepose_lightning
 testA

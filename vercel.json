@@ -4,7 +4,9 @@
       "src": "controller.py",
       "use": "@vercel/python",
       "config": {
-        "maxLambdaSize": "50mb"
+        "maxLambdaSize": "50mb",
+        "memory": 1024,
+        "maxDuration": 10
       }
     }
   ],
@@ -14,12 +16,6 @@
       "dest": "controller.py"
     }
   ],
-  "functions": {
-    "api/**/*.py": {
-      "memory": 1024,
-      "maxDuration": 10
-    }
-  },
   "build": {
     "env": {
       "TORCH_HOME": "./.torch"

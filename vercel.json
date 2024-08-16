@@ -1,24 +1,15 @@
 {
-  "builds": [
-    {
-      "src": "controller.py",
-      "use": "@vercel/python",
-      "config": {
-        "maxLambdaSize": "50mb",
-        "memory": 1024,
-        "maxDuration": 10
-      }
+  "version": 2,
+  "functions": {
+    "controller.py": {
+      "memory": 1024,
+      "maxDuration": 10
     }
-  ],
+  },
   "routes": [
     {
       "src": "/(.*)",
       "dest": "controller.py"
     }
-  ],
-  "build": {
-    "env": {
-      "TORCH_HOME": "./.torch"
-    }
-  }
+  ]
 }

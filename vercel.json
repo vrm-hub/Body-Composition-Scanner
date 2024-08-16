@@ -20,6 +20,5 @@
     "env": {
       "TORCH_HOME": "./.torch"
     }
-  },
-  "ignoreCommand": "find . -name '*.so' -size +50M -delete"
+  }
 }

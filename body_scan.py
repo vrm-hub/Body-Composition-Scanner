@@ -243,8 +243,8 @@ def predict(height, weight, front_image_path, left_image_path):
 # Testing
 # height = 183  # in cm
 # weight = 98   # in kg
-# front_image_path = "front_2.jpg"
-# left_image_path = "left_2.jpg"
+# front_image_path = "front.jpg"
+# left_image_path = "left.jpg"
 # results = predict(height, weight, front_image_path, left_image_path)
 # calculate_final_metrics('male', results['Neck'], results['Waist'], results['Hip'], height, weight)
 

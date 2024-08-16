@@ -46,7 +46,6 @@ async def predict_bfp_bmi_fmi(
     )
 
     health_report = await generate_health_report(final_metrics)
-    print(f"\nHealth Report:\n{health_report}")
 
     response_content = {
         "final_metrics": final_metrics,

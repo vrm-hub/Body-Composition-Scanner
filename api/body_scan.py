@@ -230,11 +230,11 @@ def predict(height, weight, front_image_path, left_image_path):
     device = torch.device("cpu")
     deeplab = make_deeplab(device)
     
-    model_wrist = joblib.load("models/wrist_ensemble_model.pkl")
-    model_waist = joblib.load("models/waist_ensemble_model.pkl")
-    model_hip = joblib.load("models/hip_ensemble_model.pkl")
+    model_wrist = joblib.load("../models/wrist_ensemble_model.pkl")
+    model_waist = joblib.load("../models/waist_ensemble_model.pkl")
+    model_hip = joblib.load("../models/hip_ensemble_model.pkl")
 
-    scaler_file = "models/scaler.pkl"           
+    scaler_file = "../models/scaler.pkl"
     scaler = joblib.load(scaler_file)
 
     return predict_body_metrics(height, weight, front_image_path, left_image_path, deeplab, device, model_wrist, model_waist, model_hip, scaler)

@@ -131,7 +131,7 @@ columns_to_normalize = ['area','height', 'weight_kg','perimeter', 'aspect_ratio'
 # Fit and transform the data
 df[columns_to_normalize] = scaler.fit_transform(df[columns_to_normalize])
 
-scaler_file = "models/scaler.pkl"
+scaler_file = "../models/scaler.pkl"
 joblib.dump(scaler, scaler_file)
 
 df.head(5)

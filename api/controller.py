@@ -1,5 +1,6 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse
 from PIL import Image
 import io
 import gzip
@@ -61,9 +62,6 @@ async def predict_bfp_bmi_fmi(
         "final_metrics": final_metrics
     }
 
-    compressed_data = compress_data(response_content)
 
-    return StreamingResponse(io.BytesIO(compressed_data), media_type='application/gzip',
-                             headers={'Content-Encoding': 'gzip'})
 
-    # return JSONResponse(content=response_content)
+    return JSONResponse(content=response_content)

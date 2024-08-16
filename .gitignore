@@ -160,3 +160,24 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+
+models-old
+movenet_singlepose_lightning
+testA
+testB
+train
+variables
+resnet101
+BMI.ipynb
+body_composition.ipynb
+body-measurement.ipynb
+front.jpeg
+front-1.jpeg
+left-1.jpeg
+left.jpeg
+report.ipynb
+resnet.ipynb
+silhouette.jpg
+temp_front.jpg
+temp_left.jpg
+train_data.csv

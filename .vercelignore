@@ -8,3 +8,15 @@ train
 variables
 resnet101
 BMI.ipynb
+body_composition.ipynb
+body-measurement.ipynb
+front.jpeg
+front-1.jpeg
+left-1.jpeg
+left.jpeg
+report.ipynb
+resnet.ipynb
+silhouette.jpg
+temp_front.jpg
+temp_left.jpg
+train_data.csv

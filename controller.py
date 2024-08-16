@@ -2,8 +2,8 @@ from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import JSONResponse
 from PIL import Image
 import io
-import pandas as pd
 from body_scan import predict, calculate_final_metrics
+from open_ai import generate_health_report
 
 app = FastAPI()
 
@@ -45,4 +45,12 @@ async def predict_bfp_bmi_fmi(
         weight=weight
     )
 
-    return JSONResponse(content=final_metrics)
+    health_report = await generate_health_report(final_metrics)
+    print(f"\nHealth Report:\n{health_report}")
+
+    response_content = {
+        "final_metrics": final_metrics,
+        "health_report": health_report
+    }
+
+    return JSONResponse(content=response_content)

@@ -149,6 +149,7 @@ def train_and_save_model(df, target, model_name):
     joblib.dump(ensemble_model, model_file)
     print(f"Model for {target} saved as {model_file}")
 
-train_and_save_model(df, 'wrist', 'wrist')
-train_and_save_model(df, 'waist', 'waist')
-train_and_save_model(df, 'hip', 'hip')
+# Testing. Uncomment to train
+# train_and_save_model(df, 'wrist', 'wrist')
+# train_and_save_model(df, 'waist', 'waist')
+# train_and_save_model(df, 'hip', 'hip')

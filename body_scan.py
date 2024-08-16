@@ -198,6 +198,22 @@ def calculate_final_metrics(sex, neck_circumference, waist_circumference, hip_ci
     lmi, fmi = calculate_indices(lean_mass, fm, height)
     rmr = calculate_rmr(lean_mass)
 
+    metrics = {
+        'Neck': neck_circumference,
+        'Waist': waist_circumference,
+        'Hip': hip_circumference,
+        'Height': height,
+        'Weight': weight,
+        'BFP': bfp,
+        'Essential_Fat': essential_fat,
+        'Beneficial_Fat': beneficial_fat,
+        'Unbeneficial_Fat': unbeneficial_fat,
+        'Lean_Mass': lean_mass,
+        'LMI': lmi,
+        'FMI': fmi,
+        'RMR': rmr
+    }
+
     # Print Results
     print(f"Body Fat Percentage (BFP): {bfp:.2f}%")
     print(f"Essential Fat: {essential_fat:.2f} kg")
@@ -207,6 +223,8 @@ def calculate_final_metrics(sex, neck_circumference, waist_circumference, hip_ci
     print(f"Lean Mass Index (LMI): {lmi:.2f} kg/m^2")
     print(f"Fat Mass Index (FMI): {fmi:.2f} kg/m^2")
     print(f"Resting Metabolic Rate (RMR): {rmr:.2f} kcal/day")
+
+    return metrics
 
 def predict(height, weight, front_image_path, left_image_path):
     device = torch.device("cpu")
@@ -222,12 +240,12 @@ def predict(height, weight, front_image_path, left_image_path):
     return predict_body_metrics(height, weight, front_image_path, left_image_path, deeplab, device, model_wrist, model_waist, model_hip, scaler)
     
 
-
-height = 183  # in cm
-weight = 98   # in kg
-front_image_path = "front_2.jpg"
-left_image_path = "left_2.jpg"
-results = predict(height, weight, front_image_path, left_image_path)
-calculate_final_metrics('male', results['Neck'], results['Waist'], results['Hip'], height, weight)
+# Testing
+# height = 183  # in cm
+# weight = 98   # in kg
+# front_image_path = "front_2.jpg"
+# left_image_path = "left_2.jpg"
+# results = predict(height, weight, front_image_path, left_image_path)
+# calculate_final_metrics('male', results['Neck'], results['Waist'], results['Hip'], height, weight)
 
 

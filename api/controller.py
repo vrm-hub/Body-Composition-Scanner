@@ -8,22 +8,26 @@ from open_ai import generate_health_report
 
 app = FastAPI()
 
+
 def compress_data(data):
     buf = io.BytesIO()
     with gzip.GzipFile(fileobj=buf, mode='wb') as f:
         f.write(data.encode('utf-8'))
     return buf.getvalue()
+
+
 @app.get("/")
 async def health_check():
     return {"message": "The Health Check is successful"}
 
+
 @app.post("/predict/")
 async def predict_bfp_bmi_fmi(
-    file_front: UploadFile = File(...),
-    file_left: UploadFile = File(...),
-    height: int = 183,
-    weight: int = 98,
-    gender: str = 'male'
+        file_front: UploadFile = File(...),
+        file_left: UploadFile = File(...),
+        height: int = 183,
+        weight: int = 98,
+        gender: str = 'male'
 ):
     # Convert gender to numerical value
     gender_num = 1 if gender.lower() == 'male' else 0
@@ -54,8 +58,7 @@ async def predict_bfp_bmi_fmi(
     health_report = await generate_health_report(final_metrics)
 
     response_content = {
-        "final_metrics": final_metrics,
-        "health_report": health_report
+        "final_metrics": final_metrics
     }
 
     compressed_data = compress_data(response_content)

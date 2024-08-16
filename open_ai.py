@@ -5,6 +5,7 @@ from openai import AsyncOpenAI
 # add API Key in environment variable: OPENAI_API_KEY
 client = AsyncOpenAI()
 
+
 async def generate_health_report(metrics):
     prompt = (
         f"Generate a detailed health report based on the following metrics:\n"

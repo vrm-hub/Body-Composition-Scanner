@@ -1,7 +1,7 @@
 {
   "version": 2,
   "functions": {
-    "controller.py": {
+    "api/controller.py": {
       "memory": 1024,
       "maxDuration": 10
     }
@@ -9,7 +9,7 @@
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "controller.py"
+      "dest": "/api/controller.py"
     }
   ]
 }

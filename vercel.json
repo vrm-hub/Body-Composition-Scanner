@@ -1,15 +1,14 @@
 {
-  "version": 2,
-  "functions": {
-    "api/controller.py": {
-      "memory": 2048,
-      "maxDuration": 30
+  "builds": [
+    {
+      "src": "Dockerfile",
+      "use": "@vercel/docker"
     }
-  },
+  ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "/api/controller.py"
+      "dest": "/$1"
     }
   ]
 }

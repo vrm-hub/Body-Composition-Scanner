@@ -3,8 +3,6 @@ from fastapi.responses import JSONResponse
 from PIL import Image
 import io
 import pandas as pd
-
-# Import functions from body-scan.py
 from body_scan import predict, calculate_final_metrics
 
 app = FastAPI()

@@ -1,0 +1,10 @@
+.git/
+*.log
+models-old
+movenet_singlepose_lightning
+testA
+testB
+train
+variables
+resnet101
+BMI.ipynb

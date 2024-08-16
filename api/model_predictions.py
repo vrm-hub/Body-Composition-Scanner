@@ -6,7 +6,7 @@ from api.utils import make_deeplab
 
 
 def predict_body_metrics(height, weight, front_image_path, left_image_path, deeplab, device, model_wrist, model_waist, model_hip, scaler):
-    from image_processing import preprocess, apply_deeplab, create_buff, access_stored_image
+    from api.image_processing import preprocess, apply_deeplab, create_buff, access_stored_image
     from api.utils import extract_silhouette_features_for_inference
 
     # Process front and left images

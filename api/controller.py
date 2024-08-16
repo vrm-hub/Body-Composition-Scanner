@@ -3,9 +3,10 @@ from fastapi.responses import JSONResponse
 from PIL import Image
 import io
 import gzip
-from model_predictions import predict
-from metrics_calculation import calculate_final_metrics
-from open_ai import generate_health_report
+
+from api.model_predictions import predict
+from api.metrics_calculation import calculate_final_metrics
+from api.open_ai import generate_health_report
 
 app = FastAPI()
 

@@ -1,1 +1,14 @@
-{"orgId":"team_kexzMQtHwfDHPro38mjoMm5K","projectId":"prj_6ktU33sqtsLBC2VdnAPCjaB0POEo"}
+{
+  "projectId": "prj_6ktU33sqtsLBC2VdnAPCjaB0POEo",
+  "orgId": "team_kexzMQtHwfDHPro38mjoMm5K",
+  "settings": {
+    "createdAt": 1723792993377,
+    "devCommand": null,
+    "installCommand": null,
+    "buildCommand": null,
+    "outputDirectory": null,
+    "rootDirectory": null,
+    "directoryListing": false,
+    "nodeVersion": "18.x"
+  }
+}

@@ -2,8 +2,8 @@
   "version": 2,
   "functions": {
     "api/controller.py": {
-      "memory": 1024,
-      "maxDuration": 10
+      "memory": 2048,
+      "maxDuration": 30
     }
   },
   "routes": [

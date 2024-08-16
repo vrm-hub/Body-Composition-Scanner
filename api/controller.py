@@ -21,8 +21,6 @@ def compress_data(data):
 @app.get("/")
 async def health_check():
     return {"message": "The Health Check is successful"}
-
-
 @app.post("/predict/")
 async def predict_bfp_bmi_fmi(
         file_front: UploadFile = File(...),
@@ -31,6 +29,8 @@ async def predict_bfp_bmi_fmi(
         weight: int = 98,
         gender: str = 'male'
 ):
+
+
     # Convert gender to numerical value
     gender_num = 1 if gender.lower() == 'male' else 0
 
@@ -60,7 +60,8 @@ async def predict_bfp_bmi_fmi(
     health_report = await generate_health_report(final_metrics)
 
     response_content = {
-        "final_metrics": final_metrics
+        "final_metrics": final_metrics,
+        "health_report": health_report
     }
 
     return JSONResponse(content=response_content)

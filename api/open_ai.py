@@ -1,5 +1,3 @@
-import asyncio
-
 from openai import AsyncOpenAI
 
 # add API Key in environment variable: OPENAI_API_KEY

@@ -1,5 +1,5 @@
-from model_predictions import predict
-from metrics_calculation import calculate_final_metrics
+from api.model_predictions import predict
+from api.metrics_calculation import calculate_final_metrics
 
 
 def main():

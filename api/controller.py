@@ -28,11 +28,13 @@ async def predict_bfp_bmi_fmi(
         height: int = Form(...),
         weight: int = Form(...),
         gender: str = Form(...),
+        age: int = Form(...),
         file_front: UploadFile = File(...),
         file_left: UploadFile = File(...),
 ):
     height = int(height)
     weight = int(weight)
+    age = int(age)
     print('height: {}'.format(height))
     # Convert gender to numerical value
     gender_num = 1 if gender.lower() == 'male' else 0
@@ -57,10 +59,10 @@ async def predict_bfp_bmi_fmi(
         waist_circumference=results['Waist'],
         hip_circumference=results['Hip'],
         height=height,
-        weight=weight
+        weight=weight,
     )
 
-    health_report = await generate_health_report(final_metrics)
+    health_report = await generate_health_report(final_metrics, age, gender)
 
     response_content = {
         "final_metrics": final_metrics,

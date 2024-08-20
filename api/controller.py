@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import JSONResponse
 from PIL import Image
 import io
@@ -21,16 +21,19 @@ def compress_data(data):
 @app.get("/")
 async def health_check():
     return {"message": "The Health Check is successful"}
+
+
 @app.post("/predict/")
 async def predict_bfp_bmi_fmi(
+        height: int = Form(...),
+        weight: int = Form(...),
+        gender: str = Form(...),
         file_front: UploadFile = File(...),
         file_left: UploadFile = File(...),
-        height: int = 183,
-        weight: int = 98,
-        gender: str = 'male'
 ):
-
-
+    height = int(height)
+    weight = int(weight)
+    print('height: {}'.format(height))
     # Convert gender to numerical value
     gender_num = 1 if gender.lower() == 'male' else 0
 

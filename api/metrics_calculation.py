@@ -1,7 +1,7 @@
 import math
 
-def calculate_final_metrics(sex, neck_circumference, waist_circumference, hip_circumference, height, weight):
 
+def calculate_final_metrics(sex, neck_circumference, waist_circumference, hip_circumference, height, weight):
     def calculate_bfp(sex, neck_circumference, waist_circumference, hip_circumference, height):
         """
         Calculate Body Fat Percentage using the Navy Body Fat formula.
@@ -9,7 +9,8 @@ def calculate_final_metrics(sex, neck_circumference, waist_circumference, hip_ci
         if sex.lower() == 'male':
             bfp = 86.010 * math.log10(waist_circumference - neck_circumference) - 70.041 * math.log10(height) + 36.76
         elif sex.lower() == 'female':
-            bfp = 163.205 * math.log10(waist_circumference + hip_circumference - neck_circumference) - 97.684 * math.log10(height) - 78.387
+            bfp = 163.205 * math.log10(
+                waist_circumference + hip_circumference - neck_circumference) - 97.684 * math.log10(height) - 78.387
         else:
             raise ValueError("Sex must be 'male' or 'female'")
         return bfp

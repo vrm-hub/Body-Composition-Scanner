@@ -1,7 +1,8 @@
+import base64
 import os
 import tempfile
 
-from fastapi import FastAPI, UploadFile, File, Form
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import JSONResponse
 from PIL import Image
 import io
@@ -27,6 +28,22 @@ async def health_check():
     return {"message": "The Health Check is successful"}
 
 
+@app.post("/convert-to-base64/")
+async def convert_image_to_base64(file: UploadFile = File(...)):
+    try:
+        # Read the uploaded file
+        file_data = await file.read()
+
+        # Encode the file data to Base64
+        base64_encoded = base64.b64encode(file_data).decode('utf-8')
+
+        # Return the Base64 encoded string
+        return JSONResponse(content={"base64_encoded": base64_encoded})
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/predict/")
 async def predict_bfp_bmi_fmi(request: PredictRequest):
     height = request.height
     weight = request.weight

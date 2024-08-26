@@ -1,3 +1,6 @@
+import os
+import tempfile
+
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import JSONResponse
 from PIL import Image
@@ -7,6 +10,7 @@ import gzip
 from api.model_predictions import predict
 from api.metrics_calculation import calculate_final_metrics
 from api.open_ai import generate_health_report
+from api.request_model import PredictRequest
 
 app = FastAPI()
 
@@ -23,34 +27,30 @@ async def health_check():
     return {"message": "The Health Check is successful"}
 
 
-@app.post("/predict/")
-async def predict_bfp_bmi_fmi(
-        height: int = Form(...),
-        weight: int = Form(...),
-        gender: str = Form(...),
-        age: int = Form(...),
-        file_front: UploadFile = File(...),
-        file_left: UploadFile = File(...),
-):
-    height = int(height)
-    weight = int(weight)
-    age = int(age)
-    print('height: {}'.format(height))
+async def predict_bfp_bmi_fmi(request: PredictRequest):
+    height = request.height
+    weight = request.weight
+    age = request.age
+    gender = request.gender
+    file_front_data = request.file_front
+    file_left_data = request.file_left
+
     # Convert gender to numerical value
     gender_num = 1 if gender.lower() == 'male' else 0
 
     # Read images
-    image_front = Image.open(io.BytesIO(await file_front.read()))
-    image_left = Image.open(io.BytesIO(await file_left.read()))
+    image_front = Image.open(io.BytesIO(file_front_data))
+    image_left = Image.open(io.BytesIO(file_left_data))
 
-    # Save images temporarily
-    front_image_path = "temp_front.jpg"
-    left_image_path = "temp_left.jpg"
-    image_front.save(front_image_path)
-    image_left.save(left_image_path)
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as temp_front, \
+            tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as temp_left:
+        image_front.save(temp_front.name)
+        image_left.save(temp_left.name)
 
-    # Use the functions from body-scan.py to perform calculations
-    results = predict(height, weight, front_image_path, left_image_path)
+        results = predict(height, weight, temp_front.name, temp_left.name)
+
+    os.remove(temp_front.name)
+    os.remove(temp_left.name)
 
     # Calculate final metrics
     final_metrics = calculate_final_metrics(

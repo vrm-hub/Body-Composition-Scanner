@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from torchvision.models.segmentation import deeplabv3_resnet101
+from torchvision.models.segmentation import deeplabv3_resnet101, DeepLabV3_ResNet101_Weights
 
 
 # Method to extract features for inference images
@@ -41,6 +41,7 @@ def extract_silhouette_features_for_inference(image, subject_height):
 
 # load prebuilt Resnet model
 def make_deeplab(device):
-    deeplab = deeplabv3_resnet101(pretrained=True).to(device)
+    weights = DeepLabV3_ResNet101_Weights.COCO_WITH_VOC_LABELS_V1
+    deeplab = deeplabv3_resnet101(weights=weights).to(device)
     deeplab.eval()
     return deeplab

@@ -3,17 +3,18 @@ import base64
 import threading
 
 import torch
-from fastapi.logger import logger
+import logging
+
+import json
 
 from api.utils import make_deeplab
 import joblib
 
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Request
 from fastapi.responses import JSONResponse
 from PIL import Image, UnidentifiedImageError
 import io
 import gzip
-
 
 from api.model_predictions import predict
 from api.metrics_calculation import calculate_final_metrics
@@ -32,6 +33,9 @@ model_hip = joblib.load("models/hip_ensemble_model.pkl")
 scaler = joblib.load("models/scaler.pkl")
 
 model_lock = threading.Lock()
+
+logger = logging.getLogger("fastmind")
+
 
 def compress_data(data):
     buf = io.BytesIO()
@@ -71,24 +75,38 @@ async def convert_image_to_base64(file: UploadFile = File(...)):
 
 
 @app.post("/predict/")
-async def predict_bfp_bmi_fmi(request: PredictRequest):
+async def predict_bfp_bmi_fmi(request: Request, predict_request: PredictRequest):
     try:
-        height = request.height
-        weight = request.weight
-        age = request.age
-        gender = request.gender
 
-        curl_command = (
-            f"curl -X POST {request.url} "
-            f"-H 'Content-Type: application/json' "
-            f"-d '{{\"height\": {request.height}, \"weight\": {request.weight}, \"age\": {request.age}, \"gender\": \"{request.gender}\", "
-            f"\"file_front\": \"<BASE64_ENCODED_FRONT_IMAGE>\", \"file_left\": \"<BASE64_ENCODED_LEFT_IMAGE>\"}}'"
-        )
+        # Extract the request details
+        method = request.method
+        url = str(request.url)
+        headers = dict(request.headers)
+        body = await request.json()
+
+        # Generate the curl command
+        curl_command = f"curl -X {method} '{url}'"
+
+        # Add headers to the curl command
+        for header, value in headers.items():
+            if header.lower() not in ["content-length", "host"]:
+                curl_command += f" -H '{header}: {value}'"
+
+        # Add the body to the curl command if it exists
+        if body:
+            curl_command += f" -d '{json.dumps(body)}'"
+
         logger.info(f"Received request: {curl_command}")
 
+        # Extract the relevant fields from the body
+        height = predict_request.height
+        weight = predict_request.weight
+        age = predict_request.age
+        gender = predict_request.gender
+
         # Decode Base64 strings
-        file_front_data = base64.b64decode(request.file_front)
-        file_left_data = base64.b64decode(request.file_left)
+        file_front_data = base64.b64decode(predict_request.file_front)
+        file_left_data = base64.b64decode(predict_request.file_left)
 
         # Convert gender to numerical value
         gender_num = 1 if gender.lower() == 'male' else 0
@@ -107,7 +125,8 @@ async def predict_bfp_bmi_fmi(request: PredictRequest):
         # os.remove(temp_front.name)
         # os.remove(temp_left.name)
 
-        results = predict(height, weight, image_front, image_left, deeplab, device, model_wrist, model_waist, model_hip, scaler, model_lock)
+        results = predict(height, weight, image_front, image_left, deeplab, device, model_wrist, model_waist, model_hip,
+                          scaler, model_lock)
 
         # Calculate final metrics
         final_metrics = calculate_final_metrics(

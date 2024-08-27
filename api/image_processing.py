@@ -1,6 +1,7 @@
 import cv2
 import io
 import matplotlib.pyplot as plt
+import numpy as np
 import torch
 from PIL import Image
 from torchvision import transforms
@@ -13,8 +14,8 @@ deeplab_preprocess = transforms.Compose([
 
 
 # resize images
-def preprocess(f_name):
-    img_orig = cv2.imread(f_name, 1)
+def preprocess(image: Image.Image):
+    img_orig = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
     k = min(1.0, 1024 / max(img_orig.shape[0], img_orig.shape[1]))
     img = cv2.resize(img_orig, None, fx=k, fy=k, interpolation=cv2.INTER_LANCZOS4)
     return img

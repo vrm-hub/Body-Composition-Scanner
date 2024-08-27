@@ -1,5 +1,6 @@
 import asyncio
 import base64
+import sys
 import threading
 
 import torch
@@ -34,6 +35,15 @@ scaler = joblib.load("models/scaler.pkl")
 
 model_lock = threading.Lock()
 
+# Configure the logger
+logging.basicConfig(
+    level=logging.INFO,  # Set the logging level to INFO
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",  # Format of the log messages
+    handlers=[
+        logging.StreamHandler(sys.stdout)  # Output logs to stdout (console)
+    ]
+)
+
 logger = logging.getLogger("fastmind")
 
 
@@ -58,45 +68,67 @@ async def health_check():
     return {"message": "The Health Check is successful"}
 
 
+@app.post("/create-request/")
+async def create_request(request: Request, height: float,
+                         weight: float,
+                         age: int,
+                         gender: str,
+                         file_front: UploadFile = File(...),
+                         file_left: UploadFile = File(...)):
+
+    # Convert the uploaded files to Base64
+    front_encoded = (await convert_image_to_base64(file_front))
+    left_encoded = (await convert_image_to_base64(file_left))
+
+    # Build the request body
+    body = {
+        "height": height,
+        "weight": weight,
+        "age": age,
+        "gender": gender,
+        "file_front": front_encoded,
+        "file_left": left_encoded
+    }
+    # Extract the request details
+    method = "POST"
+    url = str(request.url)
+
+    # Generate the curl command
+    curl_command = f"curl -X {method} '{url}'"
+
+    # Add the body to the curl command
+    curl_command += f" -H 'Content-Type: application/json' -d '{json.dumps(body)}'"
+
+    return curl_command
+
+
 @app.post("/convert-to-base64/")
 async def convert_image_to_base64(file: UploadFile = File(...)):
     try:
         # Read the uploaded file
         file_data = await file.read()
 
-        # Encode the file data to Base64
-        base64_encoded = base64.b64encode(file_data).decode('utf-8')
+        # Compress the file data using gzip
+        compressed_data = io.BytesIO()
+        with gzip.GzipFile(fileobj=compressed_data, mode='wb') as gzip_file:
+            gzip_file.write(file_data)
+
+        # Move the pointer to the start of the buffer
+        compressed_data.seek(0)
+
+        # Encode the compressed data to Base64
+        base64_encoded = base64.b64encode(compressed_data.read()).decode('utf-8')
 
         # Return the Base64 encoded string
-        return JSONResponse(content={"base64_encoded": base64_encoded})
+        return base64_encoded
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.post("/predict/")
-async def predict_bfp_bmi_fmi(request: Request, predict_request: PredictRequest):
+async def predict_bfp_bmi_fmi(predict_request: PredictRequest):
     try:
-
-        # Extract the request details
-        method = request.method
-        url = str(request.url)
-        headers = dict(request.headers)
-        body = await request.json()
-
-        # Generate the curl command
-        curl_command = f"curl -X {method} '{url}'"
-
-        # Add headers to the curl command
-        for header, value in headers.items():
-            if header.lower() not in ["content-length", "host"]:
-                curl_command += f" -H '{header}: {value}'"
-
-        # Add the body to the curl command if it exists
-        if body:
-            curl_command += f" -d '{json.dumps(body)}'"
-
-        logger.info(f"Received request: {curl_command}")
 
         # Extract the relevant fields from the body
         height = predict_request.height
@@ -105,8 +137,15 @@ async def predict_bfp_bmi_fmi(request: Request, predict_request: PredictRequest)
         gender = predict_request.gender
 
         # Decode Base64 strings
-        file_front_data = base64.b64decode(predict_request.file_front)
-        file_left_data = base64.b64decode(predict_request.file_left)
+        compressed_file_front_data = base64.b64decode(predict_request.file_front)
+        compressed_file_left_data = base64.b64decode(predict_request.file_left)
+
+        # Decompress the data using gzip
+        with gzip.GzipFile(fileobj=io.BytesIO(compressed_file_front_data), mode='rb') as f:
+            file_front_data = f.read()
+
+        with gzip.GzipFile(fileobj=io.BytesIO(compressed_file_left_data), mode='rb') as f:
+            file_left_data = f.read()
 
         # Convert gender to numerical value
         gender_num = 1 if gender.lower() == 'male' else 0

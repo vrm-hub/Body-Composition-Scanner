@@ -73,14 +73,14 @@ def calculate_final_metrics(sex, neck_circumference, waist_circumference, hip_ci
         'RMR': rmr
     }
 
-    # Print Results
-    print(f"Body Fat Percentage (BFP): {bfp:.2f}%")
-    print(f"Essential Fat: {essential_fat:.2f} kg")
-    print(f"Beneficial Fat: {beneficial_fat:.2f} kg")
-    print(f"Unbeneficial Fat: {unbeneficial_fat:.2f} kg")
-    print(f"Lean Mass: {lean_mass:.2f} kg")
-    print(f"Lean Mass Index (LMI): {lmi:.2f} kg/m^2")
-    print(f"Fat Mass Index (FMI): {fmi:.2f} kg/m^2")
-    print(f"Resting Metabolic Rate (RMR): {rmr:.2f} kcal/day")
+    # # Print Results
+    # print(f"Body Fat Percentage (BFP): {bfp:.2f}%")
+    # print(f"Essential Fat: {essential_fat:.2f} kg")
+    # print(f"Beneficial Fat: {beneficial_fat:.2f} kg")
+    # print(f"Unbeneficial Fat: {unbeneficial_fat:.2f} kg")
+    # print(f"Lean Mass: {lean_mass:.2f} kg")
+    # print(f"Lean Mass Index (LMI): {lmi:.2f} kg/m^2")
+    # print(f"Fat Mass Index (FMI): {fmi:.2f} kg/m^2")
+    # print(f"Resting Metabolic Rate (RMR): {rmr:.2f} kcal/day")
 
     return metrics

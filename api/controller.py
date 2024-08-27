@@ -1,10 +1,9 @@
 import asyncio
 import base64
-import os
-import tempfile
 import threading
 
 import torch
+from fastapi.logger import logger
 
 from api.utils import make_deeplab
 import joblib
@@ -16,7 +15,7 @@ import io
 import gzip
 
 
-from api.model_predictions import predict_body_metrics, predict
+from api.model_predictions import predict
 from api.metrics_calculation import calculate_final_metrics
 from api.open_ai import generate_health_report
 from api.request_model import PredictRequest

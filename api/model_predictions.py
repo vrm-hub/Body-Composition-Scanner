@@ -1,5 +1,4 @@
 import pandas as pd
-import threading
 
 
 def predict_body_metrics(height, weight, front_image_path, left_image_path, deeplab, device, model_wrist, model_waist,

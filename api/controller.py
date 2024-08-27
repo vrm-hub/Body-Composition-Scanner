@@ -44,8 +44,7 @@ logging.basicConfig(
     ]
 )
 
-logger = logging.getLogger("fastmind")
-
+logger = logging.getLogger("controller")
 
 def compress_data(data):
     buf = io.BytesIO()

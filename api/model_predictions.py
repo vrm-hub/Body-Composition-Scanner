@@ -1,11 +1,9 @@
-import joblib
 import pandas as pd
-import torch
-
-from api.utils import make_deeplab
+import threading
 
 
-def predict_body_metrics(height, weight, front_image_path, left_image_path, deeplab, device, model_wrist, model_waist, model_hip, scaler):
+def predict_body_metrics(height, weight, front_image_path, left_image_path, deeplab, device, model_wrist, model_waist,
+                         model_hip, scaler):
     from api.image_processing import preprocess, apply_deeplab, create_buff, access_stored_image
     from api.utils import extract_silhouette_features_for_inference
 
@@ -61,16 +59,9 @@ def predict_body_metrics(height, weight, front_image_path, left_image_path, deep
     }
 
 
-def predict(height, weight, front_image_path, left_image_path):
-    device = torch.device("cpu")
-    deeplab = make_deeplab(device)
-
-    model_wrist = joblib.load("models/wrist_ensemble_model.pkl")
-    model_waist = joblib.load("models/waist_ensemble_model.pkl")
-    model_hip = joblib.load("models/hip_ensemble_model.pkl")
-
-    scaler_file = "models/scaler.pkl"
-    scaler = joblib.load(scaler_file)
-
-    return predict_body_metrics(height, weight, front_image_path, left_image_path, deeplab, device, model_wrist,
-                                model_waist, model_hip, scaler)
+def predict(height, weight, image_front, image_left, deeplab, device, model_wrist, model_waist, model_hip, scaler,
+            model_lock):
+    # Use the global lock to synchronize access
+    with model_lock:
+        return predict_body_metrics(height, weight, image_front, image_left, deeplab, device, model_wrist,
+                                    model_waist, model_hip, scaler)

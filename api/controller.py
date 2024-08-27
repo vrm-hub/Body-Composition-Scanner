@@ -4,7 +4,7 @@ import tempfile
 
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import JSONResponse
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 import io
 import gzip
 
@@ -43,47 +43,59 @@ async def convert_image_to_base64(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+
 @app.post("/predict/")
 async def predict_bfp_bmi_fmi(request: PredictRequest):
-    height = request.height
-    weight = request.weight
-    age = request.age
-    gender = request.gender
-    file_front_data = request.file_front
-    file_left_data = request.file_left
+    try:
+        height = request.height
+        weight = request.weight
+        age = request.age
+        gender = request.gender
+        file_front_data = request.file_front
+        file_left_data = request.file_left
 
-    # Convert gender to numerical value
-    gender_num = 1 if gender.lower() == 'male' else 0
+        # Decode Base64 strings
+        file_front_data = base64.b64decode(request.file_front)
+        file_left_data = base64.b64decode(request.file_left)
 
-    # Read images
-    image_front = Image.open(io.BytesIO(file_front_data))
-    image_left = Image.open(io.BytesIO(file_left_data))
+        # Convert gender to numerical value
+        gender_num = 1 if gender.lower() == 'male' else 0
 
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as temp_front, \
-            tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as temp_left:
-        image_front.save(temp_front.name)
-        image_left.save(temp_left.name)
+        # Read images
+        image_front = Image.open(io.BytesIO(file_front_data))
+        image_left = Image.open(io.BytesIO(file_left_data))
 
-        results = predict(height, weight, temp_front.name, temp_left.name)
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as temp_front, \
+                tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as temp_left:
+            image_front.save(temp_front.name)
+            image_left.save(temp_left.name)
 
-    os.remove(temp_front.name)
-    os.remove(temp_left.name)
+            results = predict(height, weight, temp_front.name, temp_left.name)
 
-    # Calculate final metrics
-    final_metrics = calculate_final_metrics(
-        sex='male' if gender_num == 1 else 'female',
-        neck_circumference=results['Neck'],
-        waist_circumference=results['Waist'],
-        hip_circumference=results['Hip'],
-        height=height,
-        weight=weight,
-    )
+        os.remove(temp_front.name)
+        os.remove(temp_left.name)
 
-    health_report = await generate_health_report(final_metrics, age, gender)
+        # Calculate final metrics
+        final_metrics = calculate_final_metrics(
+            sex='male' if gender_num == 1 else 'female',
+            neck_circumference=results['Neck'],
+            waist_circumference=results['Waist'],
+            hip_circumference=results['Hip'],
+            height=height,
+            weight=weight,
+        )
 
-    response_content = {
-        "final_metrics": final_metrics,
-        "health_report": health_report
-    }
+        health_report = await generate_health_report(final_metrics, age, gender)
 
-    return JSONResponse(content=response_content)
+        response_content = {
+            "final_metrics": final_metrics,
+            "health_report": health_report
+        }
+
+        return JSONResponse(content=response_content)
+    except base64.binascii.Error:
+        raise HTTPException(status_code=400, detail="Invalid Base64 encoding")
+    except UnidentifiedImageError:
+        raise HTTPException(status_code=400, detail="Cannot identify image file")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

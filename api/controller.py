@@ -1,21 +1,18 @@
-import asyncio
 import base64
 import sys
 import threading
+import time
 
 import torch
 import logging
 
-import json
-
 from api.utils import make_deeplab
 import joblib
 
-from fastapi import FastAPI, UploadFile, File, HTTPException, Request
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
 from PIL import Image, UnidentifiedImageError
 import io
-import gzip
 
 from api.model_predictions import predict
 from api.metrics_calculation import calculate_final_metrics
@@ -37,29 +34,19 @@ model_lock = threading.Lock()
 
 # Configure the logger
 logging.basicConfig(
-    level=logging.INFO,  # Set the logging level to INFO
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",  # Format of the log messages
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
-        logging.StreamHandler(sys.stdout)  # Output logs to stdout (console)
+        logging.StreamHandler(sys.stdout)
     ]
 )
 
 logger = logging.getLogger("controller")
 
-def compress_data(data):
-    buf = io.BytesIO()
-    with gzip.GzipFile(fileobj=buf, mode='wb') as f:
-        f.write(data.encode('utf-8'))
-    return buf.getvalue()
 
-
-async def process_image_async(image_data: bytes):
-    # Simulate I/O-bound operation
-    await asyncio.sleep(0.1)  # Example: simulate I/O delay
-
+async def process_image_async(image_data: bytes) -> Image.Image:
     # Open the image asynchronously
-    image = Image.open(io.BytesIO(image_data))
-    return image
+    return Image.open(io.BytesIO(image_data))
 
 
 @app.get("/")
@@ -68,18 +55,15 @@ async def health_check():
 
 
 @app.post("/create-request/")
-async def create_request(request: Request, height: float,
+async def create_request(height: float,
                          weight: float,
                          age: int,
                          gender: str,
                          file_front: UploadFile = File(...),
                          file_left: UploadFile = File(...)):
+    front_encoded = await convert_image_to_base64(file_front)
+    left_encoded = await convert_image_to_base64(file_left)
 
-    # Convert the uploaded files to Base64
-    front_encoded = (await convert_image_to_base64(file_front))
-    left_encoded = (await convert_image_to_base64(file_left))
-
-    # Build the request body
     body = {
         "height": height,
         "weight": weight,
@@ -88,39 +72,15 @@ async def create_request(request: Request, height: float,
         "file_front": front_encoded,
         "file_left": left_encoded
     }
-    # Extract the request details
-    method = "POST"
-    url = str(request.url)
 
-    # Generate the curl command
-    curl_command = f"curl -X {method} '{url}'"
-
-    # Add the body to the curl command
-    curl_command += f" -H 'Content-Type: application/json' -d '{json.dumps(body)}'"
-
-    return curl_command
+    return body
 
 
 @app.post("/convert-to-base64/")
-async def convert_image_to_base64(file: UploadFile = File(...)):
+async def convert_image_to_base64(file: UploadFile = File(...)) -> str:
     try:
-        # Read the uploaded file
         file_data = await file.read()
-
-        # Compress the file data using gzip
-        compressed_data = io.BytesIO()
-        with gzip.GzipFile(fileobj=compressed_data, mode='wb') as gzip_file:
-            gzip_file.write(file_data)
-
-        # Move the pointer to the start of the buffer
-        compressed_data.seek(0)
-
-        # Encode the compressed data to Base64
-        base64_encoded = base64.b64encode(compressed_data.read()).decode('utf-8')
-
-        # Return the Base64 encoded string
-        return base64_encoded
-
+        return base64.b64encode(file_data).decode('utf-8')
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -128,45 +88,24 @@ async def convert_image_to_base64(file: UploadFile = File(...)):
 @app.post("/predict/")
 async def predict_bfp_bmi_fmi(predict_request: PredictRequest):
     try:
+        start_time = time.time()
 
-        # Extract the relevant fields from the body
         height = predict_request.height
         weight = predict_request.weight
         age = predict_request.age
         gender = predict_request.gender
 
-        # Decode Base64 strings
-        compressed_file_front_data = base64.b64decode(predict_request.file_front)
-        compressed_file_left_data = base64.b64decode(predict_request.file_left)
+        file_front_data = base64.b64decode(predict_request.file_front)
+        file_left_data = base64.b64decode(predict_request.file_left)
 
-        # Decompress the data using gzip
-        with gzip.GzipFile(fileobj=io.BytesIO(compressed_file_front_data), mode='rb') as f:
-            file_front_data = f.read()
-
-        with gzip.GzipFile(fileobj=io.BytesIO(compressed_file_left_data), mode='rb') as f:
-            file_left_data = f.read()
-
-        # Convert gender to numerical value
         gender_num = 1 if gender.lower() == 'male' else 0
 
-        # Read images
         image_front = await process_image_async(file_front_data)
         image_left = await process_image_async(file_left_data)
-
-        # with tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as temp_front, \
-        #         tempfile.NamedTemporaryFile(delete=False, suffix='.jpg') as temp_left:
-        #     image_front.save(temp_front.name)
-        #     image_left.save(temp_left.name)
-        #
-        #     results = predict(height, weight, temp_front.name, temp_left.name)
-        #
-        # os.remove(temp_front.name)
-        # os.remove(temp_left.name)
 
         results = predict(height, weight, image_front, image_left, deeplab, device, model_wrist, model_waist, model_hip,
                           scaler, model_lock)
 
-        # Calculate final metrics
         final_metrics = calculate_final_metrics(
             sex='male' if gender_num == 1 else 'female',
             neck_circumference=results['Neck'],
@@ -177,6 +116,9 @@ async def predict_bfp_bmi_fmi(predict_request: PredictRequest):
         )
 
         health_report = await generate_health_report(final_metrics, age, gender)
+
+        process_time = time.time() - start_time
+        logger.info(f"Process time: {process_time:.4f} seconds")
 
         response_content = {
             "final_metrics": final_metrics,
